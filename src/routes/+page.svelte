@@ -185,18 +185,18 @@
       {#if game_state == states.smush}
         <polygon on:click={() => {offset -= 1}} points="{-0.4*view_x},{0.35*view_y} {-0.3*view_x},{0.4*view_y} {-0.3*view_x},{0.3*view_y}" fill="black" />
         <polygon on:click={() => {offset += 1}} points="{0.4*view_x},{0.35*view_y} {0.3*view_x},{0.4*view_y} {0.3*view_x},{0.3*view_y}" fill="black" />
-        <g on:click={() => {bead_lines[1] = bead_lines[1].reverse()}}>
-          <rect  width={0.2 * view_x} height={0.1 * view_y} x={-0.26 * view_x} y={0.3 * view_y} rx={bead_radius} />
-          <text y={0.385 * view_y} x={-0.16 * view_x} text-anchor="middle" font-size=0.1 fill="white">FLIP</text>
+        <g>
+          <text y={0.385 * view_y} x={-0.16 * view_x} text-anchor="middle" font-size=0.1>FLIP</text>
+          <rect on:click={() => {bead_lines[1] = bead_lines[1].reverse()}} width={0.2 * view_x} height={0.1 * view_y} x={-0.26 * view_x} y={0.3 * view_y} rx={bead_radius} />
         </g>
-        <g on:click={smush}>
-          <rect width={0.3 * view_x} height={0.1 * view_y} x={-0.04 * view_x} y={0.3 * view_y} rx={bead_radius} />
-          <text y={0.385 * view_y} x={0.11 * view_x} text-anchor="middle" font-size=0.1 fill="white">SMUSH</text>
+        <g>
+          <text y={0.385 * view_y} x={0.11 * view_x} text-anchor="middle" font-size=0.1>SMUSH</text>
+          <rect on:click={smush} width={0.3 * view_x} height={0.1 * view_y} x={-0.04 * view_x} y={0.3 * view_y} rx={bead_radius}/>
         </g>
       {:else if game_state == states.display}
-        <g on:click={() => {change_game_state(states.wheel); moves += 1;}}>
-          <rect width={0.25 * view_x} height={0.1 * view_y} x={-0.125 * view_x} y={0.3 * view_y} rx={bead_radius} />
-          <text y={0.385 * view_y} x={0 * view_x} text-anchor="middle" font-size=0.1 fill="white">NEXT</text>
+        <g>
+          <text y={0.385 * view_y} x={0 * view_x} text-anchor="middle" font-size=0.1>NEXT</text>
+          <rect on:click={() => {change_game_state(states.wheel); moves += 1;}} width={0.25 * view_x} height={0.1 * view_y} x={-0.125 * view_x} y={0.3 * view_y} rx={bead_radius} />
         </g>
       {/if}
     </g>
@@ -236,7 +236,7 @@
   }
 
   circle {
-    transition: all 0.8s ease;
+    transition: all 0.8s ease, fill 0s;
   }
 
   .move_counter {
@@ -247,5 +247,11 @@
 
   g > text {
     user-select: none;
+  }
+
+  rect {
+    fill: transparent;
+    stroke: black;
+    stroke-width: 0.01;
   }
 </style>
