@@ -236,7 +236,7 @@
   }
 
   circle {
-    transition: all 0.2s ease;
+    transition: all 0.8s ease;
   }
 
   .move_counter {
