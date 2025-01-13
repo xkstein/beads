@@ -116,6 +116,7 @@
       game_state = states.wheel;
     } 
     else if (state == states.smush) {
+      offset = 0;
       let animation_ind = 0;
       let animation_steps = 20;
       let viewbox_animation = setInterval(() => {
