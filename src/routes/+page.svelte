@@ -9,18 +9,59 @@
     display: 2
   }
 
-  let game_state = $state(null);
+  let game_state = $state(-1);
+
+  // Bead RNG - Shuffles the array based on today's date
+  //let bead_value = Array.from({length: 40}, () => Math.random() < 0.5);
+  const n_beads = 40;
+
+  /**
+    * Returns random number and 3 seeds
+    * @param {number} s1
+    * @param {number} s2
+    * @param {number} s3
+    */
+  function wichmann_hill(s1, s2, s3) {
+    let new_s1 = ( 171 * s1 ) % 30269;
+    let new_s2 = ( 172 * s2 ) % 30307;
+    let new_s3 = ( 170 * s3 ) % 30323;
+
+    return [ ( new_s1 / 30269.0 + new_s2 / 30307.0 + new_s3 / 30323.0 ) % 1, new_s1, new_s2, new_s3 ]
+  }
+
+  /**
+    * Shuffles array with 3 seeds
+    * @param {Array} arr
+    * @param {number} s1
+    * @param {number} s2
+    * @param {number} s3
+    */
+  function shuffle(arr, s1, s2, s3) {
+    let r = 0;
+    for (let i = arr.length - 1; i >= 0; i--) {
+      [r, s1, s2, s3] = wichmann_hill(s1, s2, s3);
+      const j = Math.floor( r * (i + 1) );
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  /** @type {boolean[]} */
+  var bead_value = [];
+  for (let i = 0; i < n_beads; i++) {
+    bead_value.push(i < n_beads / 2);
+  }
+
+  let today = new Date();
+  bead_value = shuffle(bead_value, today.getDate(), today.getMonth() + 1, today.getFullYear());
 
   let view_x = $state(1);
   let view_y = $state(1);
 
-  let radius = $derived( 0.5 * (Math.sqrt(view_x ** 2 + view_y ** 2) / 4) );
-  $inspect(radius);
+  let radius = 0.5 * (Math.sqrt(view_x ** 2 + view_y ** 2) / 4);
+  let bead_radius = $derived(0.6 * Math.PI * radius / bead_value.length);
 
-  let bead_value = Array.from({length: 40}, () => Math.random() < 0.5);
-
-  let bead_radius = $derived(0.5 * Math.PI * radius / bead_value.length);
-
+  /** @type {number[]} */
   var line_angles = [];
   for (let i = 0; i < bead_value.length; i++) {
     line_angles.push( (2 * i + 1) * Math.PI / bead_value.length );
@@ -109,7 +150,7 @@
   function change_game_state(state) {
     if (state == states.wheel) {
       let viewbox_animation = setInterval(() => {
-        view_x = 1;
+        view_x = 0.75;
         clearInterval(viewbox_animation);
       }, 500);
 
@@ -117,11 +158,12 @@
     } 
     else if (state == states.smush) {
       offset = 0;
+      const view_x_i = view_x;
       let animation_ind = 0;
       let animation_steps = 20;
       let viewbox_animation = setInterval(() => {
         animation_ind += 1;
-        view_x = (animation_ind) * ( 4 * bead_radius * bead_value.length - 1 ) / animation_steps + 1;
+        view_x = (animation_ind) * ( 4 * bead_radius * bead_value.length - view_x_i ) / animation_steps + view_x_i;
         if (animation_ind == animation_steps) {
           clearInterval(viewbox_animation);
         }
@@ -135,11 +177,12 @@
   }
 
   onMount(() => {
+    view_x = 0.75;
     game_state = states.wheel;
   });
 </script>
 
-<svg class="game-window" viewBox="-{0.5 * view_x} -{0.5 * view_y} {view_x} {view_y}">
+<svg class="game-window" viewBox="-{0.5 * view_x} -{0.5 * view_x} {view_x} {view_x}">
   {#if game_state == states.wheel}
     {#each bead_value as value, index}
       <circle out:fade|global={{delay: 100, duration: 200}} in:fade|global={{delay:550, duration:200}}
@@ -187,11 +230,11 @@
         <polygon on:click={() => {offset -= 1}} points="{-0.4*view_x},{0.35*view_y} {-0.3*view_x},{0.4*view_y} {-0.3*view_x},{0.3*view_y}" fill="black" />
         <polygon on:click={() => {offset += 1}} points="{0.4*view_x},{0.35*view_y} {0.3*view_x},{0.4*view_y} {0.3*view_x},{0.3*view_y}" fill="black" />
         <g>
-          <text y={0.385 * view_y} x={-0.16 * view_x} text-anchor="middle" font-size=0.1>FLIP</text>
+          <text y={0.346 * view_y} x={-0.16 * view_x} text-anchor="middle" dominant-baseline=mathematical font-size=0.09>FLIP</text>
           <rect on:click={() => {bead_lines[1] = bead_lines[1].reverse()}} width={0.2 * view_x} height={0.1 * view_y} x={-0.26 * view_x} y={0.3 * view_y} rx={bead_radius} />
         </g>
         <g>
-          <text y={0.385 * view_y} x={0.11 * view_x} text-anchor="middle" font-size=0.1>SMUSH</text>
+          <text y={0.346 * view_y} x={0.11 * view_x} text-anchor="middle"  dominant-baseline=mathematical font-size=0.09>SMUSH</text>
           <rect on:click={smush} width={0.3 * view_x} height={0.1 * view_y} x={-0.04 * view_x} y={0.3 * view_y} rx={bead_radius}/>
         </g>
       {:else if game_state == states.display}
